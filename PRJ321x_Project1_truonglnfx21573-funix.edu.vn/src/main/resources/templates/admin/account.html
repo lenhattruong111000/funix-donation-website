@@ -1,0 +1,220 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>account</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+
+    <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" >
+    <script type="text/javaScript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javaScript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script type="text/javaScript" src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+    <script type="text/javaScript">
+      $(document).ready(function(){
+        $('#myTable').DataTable({
+            "lengthMenu": [ [3, 5, 10, 25, 50, -1], [3, 5, 10, 25, 50, "All"] ]
+        });
+      });
+    </script>
+
+    <!-- pop-up success    -->
+    <script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+</head>
+<body>
+
+<div th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Quản Trị</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Sittings</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Dropdown link
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+
+
+<div>
+    <!--add new account-->
+    <div>
+        <a href="/admin/newAccount">
+            <button type="button" class="btn btn-success">Thêm mới(+)</button>
+        </a>
+     </div>
+
+    <table class="table table-striped table-hover table-bordered display" id= "myTable">
+      <thead>
+      <tr>
+        <th>Họ tên
+        <th>Email
+        <th>Số điện thoại
+        <th>Tài khoản
+        <th>Vai trò
+        <th>Trạng thái
+        <th>Hành động
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="appUser, iterationStat : ${appUsers}">
+
+        <td th:text="${appUser.fullName}"></td>
+        <td th:text="${appUser.email}"></td>
+        <td th:text="${appUser.phoneNumber}"></td>
+        <td th:text="${appUser.userName}"></td>
+        <td th:switch="${appUser.role.roleName}">
+            <p th:case="ROLE_ADMIN">
+                <span > Admin</span>
+            </p>
+            <p th:case="ROLE_USER">
+                <span> User</span>
+            </p>
+        </td>
+        <td th:switch="${appUser.status}">
+          <p th:case="1">
+            <span style="color:green;"> Hoạt động</span>
+          </p>
+          <p th:case="0">
+            <span style="color:red;"> Đã khóa</span>
+          </p>
+        </td>
+
+        <td>
+
+
+            <a><button type="button" class="btn btn-success">Gửi</button></a>
+            <!-- Button trigger modal for edit function -->
+            <a type="button" class="btn btn-primary" data-bs-toggle="modal" th:attr="data-bs-target='#editModal'+${appUser.id}" data-row="${appUser}">Sửa</a>
+
+            <!-- Modal edit function-->
+            <div class="modal fade" th:attr="id='editModal'+${appUser.id}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="editModalLabel">Cập Nhật</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form th:action="@{account/update}" method="post" th:object="${appUsers[__${iterationStat.index}__]}">
+                                    <input type="text" hidden="hidden" th:name="|id|" th:value="${appUser.id}">
+                                    <div class="row">
+                                        <div class="col">
+                                            <div>Họ và tên:</div>
+                                            <input type="text" class="form-control" placeholder="Full name" aria-label="Full name" th:name="|fullName|"  th:value="${appUser.fullName}" required="required">
+                                        </div>
+                                        <div class="col" >
+                                            <div>Email:</div>
+                                            <input disabled="disabled" type="text" class="form-control" placeholder="Email" aria-label="Email" th:name="|email|" th:value="${appUser.email}" required="required">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div>Số điện thoại:</div>
+                                            <input type="text" class="form-control" placeholder="Phone Number" aria-label="Phone Number" th:name="|phoneNumber|" th:value="${appUser.phoneNumber}" required="required">
+                                        </div>
+                                        <div class="col">
+                                            <div>Địa chỉ:</div>
+                                            <input type="text" class="form-control" placeholder="Address" aria-label="Address" th:name="|address|" th:value="${appUser.address}" required="required">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div>Tài Khoản:</div>
+                                            <input type="text" disabled="disabled" class="form-control" placeholder="Account" aria-label="Account" th:name="|userName|" th:value="${appUser.userName}" required="required">
+                                        </div>
+                                        <div class="col">
+                                            <div>Vai trò:</div>
+                                            <select class="form-select" aria-label="Default select example" th:name="|roleId|">
+                                                <option value="2">User</option>
+                                                <option value="1">Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="submit" class="btn btn-danger"> Lưu </button>
+                                        <!--                                <a th:href="@{edit/account/{id}(id=${appUser.id})}"><button type="button" class="btn btn-danger"> Lưu </button></a>-->
+                                    </div>
+                                </form>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button trigger modal for viewing detail function -->
+            <a><button type="button" class="btn btn-warning">Chi tiết</button></a>
+
+            <!-- Button trigger modal for delete function -->
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" th:attr="data-bs-target='#deleteModal'+${appUser.id}">Xóa</button>
+
+            <!-- Modal delete function-->
+            <div class="modal fade" th:attr="id='deleteModal'+${appUser.id}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Bạn chắc chắn muốn xóa ?</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Người dùng: <span th:text="${appUser.fullName}"></span> id:<span th:text="${appUser.id}"></span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <a th:href="@{delete/account/{id}(id=${appUser.id})}"><button type="button" class="btn btn-danger"> Xóa </button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <span class="col-2" th:switch="${appUser.status}">
+                <p th:case="1">
+                    <a th:href="@{status/inactive/{id}(id=${appUser.id})}"><button type="button" class="btn btn-danger">Khóa</button></a>
+
+                </p>
+
+                <p th:case="0">
+                    <a th:href="@{status/active/{id}(id=${appUser.id})}"><button type="button" class="btn btn-success">Mở</button></a>
+                </p>
+            </span>
+
+
+        </td>
+      </tr>
+      </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+</body>
+</html>
